@@ -1,5 +1,5 @@
 // API service for backend communication
-const API_BASE_URL = (import.meta as any).env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -66,9 +66,9 @@ class ApiService {
     }
   }
 
-  // Get user profile
-  async getUserProfile() {
-    return this.fetchApi<any>('/user/profile');
+  // Get user data (profile)
+  async getUser() {
+    return this.fetchApi<any>('/user');
   }
 
   // Get user actions with progressive loading
@@ -112,9 +112,31 @@ class ApiService {
     return this.fetchApi<DocumentsResponse>(endpoint);
   }
 
-  // Get dashboard summary
-  async getDashboardSummary() {
-    return this.fetchApi<DashboardSummaryResponse>('/user/dashboard-summary');
+  // Get PDF as base64 from backend and return a Blob
+  async getPdfBlob() {
+    const response = await this.fetchApi<any>('/pdf');
+    if (response.success && response.data) {
+      const byteCharacters = atob(response.data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      return new Blob([byteArray], { type: 'application/pdf' });
+    }
+    throw new Error('Failed to fetch PDF');
+  }
+
+  // Chat with backend OpenAI endpoint
+  async chatWithAssistant(messages: { role: string; content: string }[]) {
+    const response = await this.fetchApi<any>('/chat', {
+      method: 'POST',
+      body: JSON.stringify({ messages }),
+    });
+    if (response.success && response.data) {
+      return response.data;
+    }
+    throw new Error(response.detail || 'Failed to get assistant response');
   }
 
   // Health check

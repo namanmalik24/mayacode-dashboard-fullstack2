@@ -483,11 +483,10 @@ const App: React.FC = () => {
     const fetchInitialData = async () => {
     setIsLoading(true);
       try {
-        // Fetch dashboard summary which includes user profile and initial data
-        const summaryResponse = await apiService.getDashboardSummary();
-        if (summaryResponse.success) {
-          setUserProfile(summaryResponse.data.user);
-          setOnboardingCompletion(summaryResponse.data.stats.onboardingCompletion);
+        // Fetch user data
+        const userResponse = await apiService.getUser();
+        if (userResponse.success) {
+          setUserProfile(userResponse.data);
         }
 
         // Fetch initial actions (first 2-3 items)
